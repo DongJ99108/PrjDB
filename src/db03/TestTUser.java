@@ -3,6 +3,7 @@ package db03;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -34,28 +35,87 @@ public class TestTUser {
 			System.out.println("선택:");
 			String choice = in.nextLine();
 			
+			TUserDTO tuser = null;
+			
 			switch( choice ) {
 			case "1":  break;
-			case "2":  break;
-			case "3": TUserDTO tuser = inputData(); 
+			case "2": System.out.println("조회할 아이디를 입력하세요");
+				      String uid = in.nextLine();
+				      tuser = getTUser(uid);
+				      // System.out.println( tuser.toString() );
+			          display(tuser); 
+			          break;
+			case "3": tuser = inputData(); 
 			          int aftcnt = addTUser( tuser );
 			          System.out.println(aftcnt + "건 저장되었습니다"); 
 			          break;
 			case "4":  break;
 			case "5":  break;
-			case "Q": System.out.println("프로그램을 종료합니다"); 
+			case "Q": System.out.println("프로그램을 종료합니다");
 			          System.exit(0); 
 			          break;
 			}
 			
 		} while( true ); // 무한반복 : 무한루프
 		
-		
-		
-		
-		
 	}
 	
+	// 입력받은 아이디로 한줄을 db에서 조회한다.
+	private static TUserDTO getTUser(String uid) throws ClassNotFoundException, SQLException {
+		Class.forName( driver );
+		Connection conn = DriverManager.getConnection(url, dbuid, dbpwd);
+		
+		String sql = "";
+		sql += "SELECT * FROM TUSER WHERE ID = ?"; // 물음표는 작은따옴표로 둘러싸지 않는다
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1, uid ); // sky 앞뒤에 자동으로 작은 따옴표를 붙여주기 때문에 "'sky'" 이렇게 적으면 오류가 난다.
+		
+		TUserDTO tuser = null;
+		
+		ResultSet rs = pstmt.executeQuery();
+		if ( rs.next() ) {
+			String userid   = rs.getString("id");
+			String username = rs.getString("name");
+			String email    = rs.getString("email");
+			
+			tuser  = new TUserDTO(userid, username, email);
+			
+		} else {
+			
+		}
+		
+		pstmt.close();
+		conn.close();
+		
+		return tuser;
+	}
+	
+	// TUser 한줄을 출력한다.
+	private static void display(TUserDTO tuser) {
+		if ( tuser == null ) {
+			System.out.println("조회한 자료가 없습니다. 아이디를 확인하세요");
+		} else {
+			String msg = String.format( "%s %s %s", tuser.getId(), tuser.getName(), tuser.getEmail() );
+			System.out.println();
+		}
+		
+	}
+
+	/*
+	private static void showData() throws ClassNotFoundException, SQLException {
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbuid, dbpwd);
+		
+		String sql = "";
+		sql += "SELECT * FROM TUSER WHERE ID = '?'";
+		PreparedStatement pstmt = conn.prepareStatement( sql ); // 여기까지는 바로 열고 닫은거란다.
+		
+		pstmt.close();
+		conn.close();
+		
+	}
+	*/
+
 	// DB에 insert 한다.
 	private static int addTUser(TUserDTO tuser) throws SQLException, ClassNotFoundException {
 		Class.forName(driver);
