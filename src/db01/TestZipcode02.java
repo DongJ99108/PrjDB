@@ -26,7 +26,7 @@ public class TestZipcode02 {
 		System.out.println( sql );
 		ResultSet   rs    = stmt.executeQuery(sql);
 		
-		while( rs.next() != false ) {
+		while( rs.next() ) {
 			
 			System.out.print( rs.getString(1) + ",");
 			System.out.print( rs.getString(2) + "," );
