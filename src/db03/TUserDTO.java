@@ -23,9 +23,9 @@ public class TUserDTO {
 	private String name;
 	private String email;
 	//Constructor
-	public TUserDTO() {}
+	public TUserDTO() {
+	}
 	public TUserDTO(String id, String name, String email) {
-		super();
 		this.id = id;
 		this.name = name;
 		this.email = email;

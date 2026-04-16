@@ -37,33 +37,62 @@ public class TestTUser {
 			String choice = in.nextLine();
 			
 			TUserDTO tuser = null;
+			int aftcnt;
+			String uid = "";
 			
 			switch( choice ) {
 			case "1": ArrayList<TUserDTO> userList = getTUserList(); 
 	                  displayList( userList );
 				      break;
 			case "2": System.out.println("조회할 아이디를 입력하세요");
-				      String uid = in.nextLine();
+				      uid = in.nextLine();
 				      tuser = getTUser(uid);
 				      // System.out.println( tuser.toString() );
 			          display(tuser); 
 			          break;
 			case "3": tuser = inputData(); 
-			          int aftcnt = addTUser( tuser );
+			          aftcnt = addTUser( tuser );
 			          System.out.println(aftcnt + "건 저장되었습니다"); 
 			          break;
-			case "4":  break;
-			case "5":  break;
+			case "4": tuser = inputData2();
+			          aftcnt = whiteUser( tuser );
+				      break; // 4. 회원 수정
+			case "5": System.out.println("삭제할 아이디를 입력하세요");
+			          uid = in.nextLine();
+			          tuser = deleteTUser(uid);
+				      break; // 5. 회원 삭제
 			case "Q": System.out.println("프로그램을 종료합니다");
-			          System.exit(0); 
+			          System.exit(0);
 			          break;
 			}
 			
 		} while( true ); // 무한반복 : 무한루프
 		
 	}
+
+
+
 	
-	// 1. 전체 목록 조회 - DB 에서
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// 1. DB 에서 전체 목록 조회
 	private static ArrayList<TUserDTO> getTUserList() throws ClassNotFoundException, SQLException {
 		Class.forName( driver );
 		Connection          conn     = DriverManager.getConnection(url, dbuid, dbpwd);
@@ -86,10 +115,10 @@ public class TestTUser {
 		pstmt.close();
 		conn.close();
 		
-		return null;
+		return userList;
 	}
 
-	// 2. 입력받은 아이디로 한줄을 db에서 조회한다.
+	// 2. 입력받은 아이디로 한줄을 DB에서 조회한다.
 	private static TUserDTO getTUser(String uid) throws ClassNotFoundException, SQLException {
 		Class.forName( driver );
 		Connection conn = DriverManager.getConnection(url, dbuid, dbpwd);
@@ -153,10 +182,71 @@ public class TestTUser {
 		return  aftcnt;
 		
 	}
+	
+	// 삭제
+	private static TUserDTO deleteTUser(String uid) throws ClassNotFoundException, SQLException {
+		Class.forName( driver );
+		Connection conn = DriverManager.getConnection(url, dbuid, dbpwd);
+		
+		String sql = "DELETE FROM TUSER WHERE ID = ?";
+		PreparedStatement pstmt = conn.prepareStatement(sql);
+		pstmt.setString(1, uid.toUpperCase() );
+		
+		TUserDTO tuser = null;
+		
+		ResultSet rs = pstmt.executeQuery();
+		if ( rs.next() ) {
+			String userid   = rs.getString("id");
+			String username = rs.getString("name");
+			String email    = rs.getString("email");
+			
+			tuser  = new TUserDTO(userid, username, email);
+			
+		} else {
+			
+		}
+		
+		pstmt.close();
+		conn.close();
+		
+		return tuser;
+	}
+	// 데이터를 수정한다.
+	private static int whiteUser(TUserDTO tuser) throws ClassNotFoundException, SQLException {
+		Class.forName(driver);
+		Connection conn = DriverManager.getConnection(url, dbuid, dbpwd);
+		
+		String sql = "";
+		sql += "UPDATE TUSER SET EMAIL = ?, NAME  = ? WHERE ID = ?";
+		PreparedStatement pstmt = conn.prepareStatement( sql );
+		pstmt.setString(1, tuser.getEmail());
+		pstmt.setString(2, tuser.getName());
+		pstmt.setString(3, tuser.getId());
+		
+		int aftcnt = pstmt.executeUpdate();
+		
+		pstmt.close();
+		conn.close();
+		
+		return aftcnt;
+	}
 
 	// 데이터를 키보드로 입력받는다
 	private static TUserDTO inputData() {
 		System.out.println("아이디:");
+		String id = in.nextLine();
+		System.out.println("이름:");
+		String name = in.nextLine();
+		System.out.println("이메일:");	
+		String email = in.nextLine();
+		
+		TUserDTO tuser = new TUserDTO(id, name, email);
+		return   tuser;
+	}
+	
+	// 수정할 데이터를 키보드로 입력받는다
+	private static TUserDTO inputData2() {
+		System.out.println("수정 대상인 아이디를 입력하세요:");
 		String id = in.nextLine();
 		System.out.println("이름:");
 		String name = in.nextLine();
@@ -173,7 +263,7 @@ public class TestTUser {
 			System.out.println("조회한 자료가 없습니다. 아이디를 확인하세요");
 		} else {
 			String msg = String.format( "%s %s %s", tuser.getId(), tuser.getName(), tuser.getEmail() );
-			System.out.println();
+			System.out.println(msg);
 		}
 		
 	}
@@ -195,6 +285,7 @@ public class TestTUser {
 			""".formatted(id, name, email); // java template 문자열
 			System.out.print( msg );
 		}
+		System.out.println("Press enter key ...");
 		in.nextLine();
 
 	}
