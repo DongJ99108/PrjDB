@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class TestTUser {
@@ -38,7 +39,9 @@ public class TestTUser {
 			TUserDTO tuser = null;
 			
 			switch( choice ) {
-			case "1":  break;
+			case "1": ArrayList<TUserDTO> userList = getTUserList(); 
+	                  displayList( userList );
+				      break;
 			case "2": System.out.println("조회할 아이디를 입력하세요");
 				      String uid = in.nextLine();
 				      tuser = getTUser(uid);
@@ -60,7 +63,33 @@ public class TestTUser {
 		
 	}
 	
-	// 입력받은 아이디로 한줄을 db에서 조회한다.
+	// 1. 전체 목록 조회 - DB 에서
+	private static ArrayList<TUserDTO> getTUserList() throws ClassNotFoundException, SQLException {
+		Class.forName( driver );
+		Connection          conn     = DriverManager.getConnection(url, dbuid, dbpwd);
+		String              sql      = " SELECT * FROM TUSER ";
+		sql                         += " ORDER BY ID ASC ";
+		PreparedStatement   pstmt    = conn.prepareStatement(sql);
+		ResultSet           rs       = pstmt.executeQuery();
+		
+		ArrayList<TUserDTO> userList = new ArrayList<>();
+		
+		while( rs.next() ) {
+			String          id       = rs.getString("id");
+			String          name     = rs.getString("name");
+			String          email    = rs.getString("email");
+			TUserDTO        tuser    = new TUserDTO(id, name, email);
+			userList.add( tuser );
+		}
+		
+		rs.close();
+		pstmt.close();
+		conn.close();
+		
+		return null;
+	}
+
+	// 2. 입력받은 아이디로 한줄을 db에서 조회한다.
 	private static TUserDTO getTUser(String uid) throws ClassNotFoundException, SQLException {
 		Class.forName( driver );
 		Connection conn = DriverManager.getConnection(url, dbuid, dbpwd);
@@ -68,7 +97,7 @@ public class TestTUser {
 		String sql = "";
 		sql += "SELECT * FROM TUSER WHERE ID = ?"; // 물음표는 작은따옴표로 둘러싸지 않는다
 		PreparedStatement pstmt = conn.prepareStatement(sql);
-		pstmt.setString(1, uid ); // sky 앞뒤에 자동으로 작은 따옴표를 붙여주기 때문에 "'sky'" 이렇게 적으면 오류가 난다.
+		pstmt.setString(1, uid.toUpperCase() ); // sky 앞뒤에 자동으로 작은 따옴표를 붙여주기 때문에 "'sky'" 이렇게 적으면 오류가 난다.
 		
 		TUserDTO tuser = null;
 		
@@ -89,18 +118,6 @@ public class TestTUser {
 		
 		return tuser;
 	}
-	
-	// TUser 한줄을 출력한다.
-	private static void display(TUserDTO tuser) {
-		if ( tuser == null ) {
-			System.out.println("조회한 자료가 없습니다. 아이디를 확인하세요");
-		} else {
-			String msg = String.format( "%s %s %s", tuser.getId(), tuser.getName(), tuser.getEmail() );
-			System.out.println();
-		}
-		
-	}
-
 	/*
 	private static void showData() throws ClassNotFoundException, SQLException {
 		Class.forName(driver);
@@ -116,7 +133,7 @@ public class TestTUser {
 	}
 	*/
 
-	// DB에 insert 한다.
+	// 3. DB에 insert 한다.
 	private static int addTUser(TUserDTO tuser) throws SQLException, ClassNotFoundException {
 		Class.forName(driver);
 		Connection conn = DriverManager.getConnection(url, dbuid, dbpwd);
@@ -148,6 +165,38 @@ public class TestTUser {
 		
 		TUserDTO tuser = new TUserDTO(id, name, email);
 		return   tuser;
+	}
+	
+	// TUser 한줄을 출력한다.
+	private static void display(TUserDTO tuser) {
+		if ( tuser == null ) {
+			System.out.println("조회한 자료가 없습니다. 아이디를 확인하세요");
+		} else {
+			String msg = String.format( "%s %s %s", tuser.getId(), tuser.getName(), tuser.getEmail() );
+			System.out.println();
+		}
+		
+	}
+	
+	// 전체 목록을 출력한다.
+	private static void displayList(ArrayList<TUserDTO> userList) {
+		if( userList.size() == 0 ) {
+			System.out.println("조회한 자료가 없습니다.");
+			return;
+		}
+		String fmt = "";
+		String msg = "";
+		for (TUserDTO tuser : userList) {
+			String id    = tuser.getId();
+			String name  = tuser.getName();
+			String email = tuser.getEmail();
+			msg = """
+			%s %s %s      
+			""".formatted(id, name, email); // java template 문자열
+			System.out.print( msg );
+		}
+		in.nextLine();
+
 	}
 
 }
