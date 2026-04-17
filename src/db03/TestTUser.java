@@ -54,7 +54,10 @@ public class TestTUser {
 			          aftcnt = addTUser( tuser );
 			          System.out.println(aftcnt + "건 저장되었습니다"); 
 			          break;
-			case "4": tuser = inputData2();
+			case "4": // System.out.println("수정할 아이디를 입력하세요");
+			          // String orgUsered = in.nextLine();
+			          // System.out.println("수정할 내용을 입력하세요");
+				      tuser = inputData2();
 			          aftcnt = whiteUser( tuser );
 				      break; // 4. 회원 수정
 			case "5": System.out.println("삭제할 아이디를 입력하세요");
@@ -69,26 +72,6 @@ public class TestTUser {
 		} while( true ); // 무한반복 : 무한루프
 		
 	}
-
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

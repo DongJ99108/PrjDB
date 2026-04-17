@@ -25,6 +25,10 @@ public class TUserDTO {
 	//Constructor
 	public TUserDTO() {
 	}
+	public TUserDTO(String name, String email) {
+		this.name = name;
+		this.email = email;
+	}
 	public TUserDTO(String id, String name, String email) {
 		this.id = id;
 		this.name = name;
